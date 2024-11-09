@@ -1,0 +1,145 @@
+---
+title: "Cis and Trans eQTLs"
+author: "Claudia Krueger"
+date: "11/8/2024"
+output: html_document
+---
+
+Install Matrix eQTL in R console
+```{r}
+install.packages("MatrixEQTL")
+```
+
+Load Matrix eQTL package
+```{r}
+library("MatrixEQTL")
+```
+
+Save sample dataset files that are included with the R package
+```{r}
+data_files <- find.package("MatrixEQTL")
+```
+
+Set the parameters, name of genotype file, name of gene expression data file, and name of covariate file
+```{r}
+#Set parameter
+model <- modelLINEAR; #or modelANOVA or modelLINEAR_CROSS
+
+#Read in and assign genotype file and corresponding location file to variables 
+snp_file <- paste(data_files, "/data/SNP.txt", sep="") #example file from package
+snps_location_file = paste(data_files, "/data/snpsloc.txt", sep="")
+
+#Read in and assign expression file and corresponding location file to variables
+expression_file <- paste(data_files, "/data/GE.txt", sep="") #example file from package
+gene_location_file = paste(data_files, "/data/geneloc.txt", sep="")
+
+#Read in and assign covariate file to a variable
+covariate_file <- paste(data_files, "/data/Covariates.txt", sep="") #example file from packages
+
+#If there are no covariates, set file to empty character
+#covariate_file <- character()
+```
+
+Create empty output file for both cis and trans eQTLs to write data to
+```{r}
+output_file_cis <- tempfile()
+output_file_trans <- tempfile()
+```
+
+Set p-value thresholds for both cis and trans eQTLs
+```{r}
+#Generally accepted p-value of 5e-8 is used for large datasets
+pvOutputThreshold_cis <- 2e-2
+pvOutputThreshold_trans <- 1e-2
+```
+
+Read in error covariance matrix
+```{r}
+errorCovariance <- numeric() #set to numeric() for identity
+#errorCovariance <- read.table("Sample_Data/errorCovariance.txt") #set to file for multiple of identity
+```
+
+Set distance cutoff for gene-SNP pairs to be considered cis vs trans
+```{r}
+cisDist = 1e6 # +/- 1,000,000 base pairs will be considered cis, outside of that range will be considered trans
+```
+
+Load the genotype file
+```{r}
+snps = SlicedData$new() #new object
+snps$fileDelimiter = "\t" #tab delimited
+snps$fileOmitCharacters = "NA" #missing values are NA
+snps$fileSkipRows = 1 #skips column headers
+snps$fileSkipColumns = 1 #skips row headers
+snps$fileSliceSize = 2000 #read file in slices of 2,000 rows
+snps$LoadFile(snp_file) #use snp file
+```
+
+Load the gene expression data
+```{r}
+gene = SlicedData$new() #new object
+gene$fileDelimiter = "\t" #tab delimited
+gene$fileOmitCharacters = "NA" #missing values are NA
+gene$fileSkipRows = 1 #skips column headers
+gene$fileSkipColumns = 1 #skips row headers
+gene$fileSliceSize = 2000; #read file in slices of 2,000 rows
+gene$LoadFile(expression_file) #use expression file
+```
+
+Load in the covariant data
+```{r}
+cvrt = SlicedData$new() #new object
+cvrt$fileDelimiter = "\t" #tab delimited
+cvrt$fileOmitCharacters = "NA" #missing values are NA
+cvrt$fileSkipRows = 1 #skips column headers
+cvrt$fileSkipColumns = 1 #skips row headers
+if(length(covariate_file)>0) {
+cvrt$LoadFile(covariate_file)
+} #loads in covariant file only if it has content
+```
+
+Read in location data files
+```{r}
+#read in snp location file with its headers in character strings
+snpspos <- read.table(snps_location_file, header = TRUE, stringsAsFactors = FALSE)
+#read in gene location file with its headers in character strings
+genepos <- read.table(gene_location_file, header = TRUE, stringsAsFactors = FALSE)
+```
+
+Run analysis
+```{r}
+m_eqtl = Matrix_eQTL_main( #engine performs eQTL analysis
+snps = snps, #stored data from genotype file
+gene = gene, #stored data from genotype expression file
+cvrt = cvrt, #stored data from the covariate file
+output_file_name = output_file_trans,  #path to send trans eQTL data and results to
+pvOutputThreshold = pvOutputThreshold_trans, #stored p-value threshold for trans eQTLs
+useModel = model, #stored statistic method
+errorCovariance = errorCovariance, #stored error covariance file or numeric()
+verbose = TRUE, #set to true to view status messages throughout execution
+output_file_name.cis = output_file_cis, #path to send cis eQTL data and results to
+pvOutputThreshold.cis = pvOutputThreshold_cis, #stored p-value threshold for cis eQTLs
+snpspos = snpspos, #stored data from snp location file
+genepos = genepos, #stored data from gene location file
+cisDist = cisDist, #distance cutoff for gene-SNP pairs to be considered cis
+pvalue.hist = "qqplot", #plot a qqplot
+min.pv.by.genesnp = FALSE, #save all p-values
+noFDRsaveMemory = FALSE) #store information to memory
+
+unlink(output_file_trans) #deletes the trans eQTL output file after analysis is complete
+unlink(output_file_cis) #deletes the cis eQTL output file after analysis is complete
+```
+
+View results
+```{r}
+cat('Analysis done in: ', m_eqtl$time.in.sec, ' seconds', '\n') #prints time taken to execute analysis
+cat('Detected local eQTLs:', '\n')
+show(m_eqtl$cis$eqtls) #prints detected cis eQTLs
+cat('Detected distant eQTLs:', '\n')
+show(m_eqtl$trans$eqtls) #prints detected trans eQTLs
+```
+
+Plot a qqplot of cis and trans p-values
+```{r}
+plot(m_eqtl) #plots qqplot
+```
