@@ -27,7 +27,7 @@ Cis- and trans-eQTL distinction requires two additional files for analysis, one 
 
 P-value thresholds can differ between cis- and trans-eQTLs by setting 'pvOutputThreshold_cis' and 'pvOutputThreshold_trans' to their respective values
 
-- It is recommended for larger datasets to used more stringent p-values to increase statistical power
+- It is recommended for larger datasets to use more stringent p-values to increase statistical power
 
 #### Histograms and QQplots
 02plotting.Rmd includes code that enables histogram and QQplots to be generated using the Matrix eQTL package as well as features of the plots to look at in order to support or detect possible inflation in the results.
