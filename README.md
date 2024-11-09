@@ -25,7 +25,7 @@ Cis-eQTLs are typically defined as loci that are within 1000000 (1e-6) base pair
 
 Cis- and trans-eQTL distinction requires two additional files for analysis, one of gene IDs associated with their respective locations within the genome, and one of SNP locations within the genome
 
-P-value thresholds can differ between cis- and trans-eQTLs by setting 'pvOutputThreshold_cis' and pvOutputThreshold_trans' to their respective values
+P-value thresholds can differ between cis- and trans-eQTLs by setting 'pvOutputThreshold_cis' and 'pvOutputThreshold_trans' to their respective values
 
 - It is recommended for larger datasets to used more stringent p-values to increase statistical power
 
