@@ -1,0 +1,144 @@
+---
+title: "Getting Started"
+author: "Claudia Krueger"
+date: "11/8/2024"
+output: html_document
+---
+
+Install Matrix eQTL in R console
+```{r}
+install.packages("MatrixEQTL")
+```
+
+Load Matrix eQTL package
+```{r}
+library("MatrixEQTL")
+```
+
+Save sample dataset files that are included with the R package
+```{r}
+data_files <- find.package("MatrixEQTL")
+```
+
+Set the parameters, name of genotype file, name of gene expression data file, and name of covariate file
+
+##### Parameter options:
+
+*Covariates include confounding factors including age, sex, or environment*
+
+- modelLINEAR: Standard additive linear equation, tests for significance of additive genetic effects via t-statistic
+
+  ***(expression = baseline expression + effect of covariates + sum of genetic effects)***
+  
+- modelANOVA: Allows additive and dominant genetic effects, tests for significance of additive genetic effects and dominant allele effects via F-statistic
+
+  ***(expression = baseline expression + effect of covariates + sum of genetic effects + effect of dominant alleles)***
+
+- modelLINEAR_CROSS: Tests whether the effect of the genotype on gene expression relates to the phenotype or the group defined by the last covariate like age, sex, or environment via t-statistic
+
+  ***(expression = baseline expression + effect of covariates + effect of covariates + interaction between genetic effect and last covariate)***
+
+  *Last covariate of case and control groups allows for analysis of genetic effect expression variation between the two groups*
+```{r}
+#Set parameter
+model <- modelLINEAR; #or modelANOVA or modelLINEAR_CROSS
+
+#Read in and assign genotype file to a variable
+snp_file <- paste(data_files, "/data/SNP.txt", sep="") #example file from package
+
+#Read in and assign expression file to a variable
+expression_file <- paste(data_files, "/data/GE.txt", sep="") #example file from package
+
+#Read in and assign covariate file to a variable
+covariate_file <- paste(data_files, "/data/Covariates.txt", sep="") #example file from packages
+
+#If there are no covariates, set file to empty character
+#covariate_file <- character()
+```
+
+Create empty output file to write data to
+```{r}
+output_file <- tempfile()
+```
+
+Set a p-value threshold
+
+*The larger the dataset, the lower the threshold of the p-value should be to avoid large files*
+
+*p-value determines which associations will be written to the output file; the more stringent the p-value,the less associations will be written to the output file*
+```{r}
+pvOutputThreshold <- 1e-2 #Generally accepted p-value of 5e-8 is used for large datasets
+```
+
+If the covariance matrix is a multiple of identity (diagonal of matrix is not equal to 1), approximate the error rate of predictions to be independent and of equal variance
+
+*This is rarely the case as errors are often related, but can be used for simplicity*
+```{r}
+errorCovariance <- numeric() #will use here for simplicity
+#errorCovariance <- read.table("Sample_Data/errorCovariance.txt") #read in matrix
+```
+
+Load the genotype file
+```{r}
+snps = SlicedData$new() #creates new object that can handle large datasets 
+snps$fileDelimiter = "\t" #specifies that character used to seperate file's values; (tab = "\t", comma = ",", space = " ")
+snps$fileOmitCharacters = "NA" #defines what denotes a missing value in the dataset
+snps$fileSkipRows = 1 #skips the first x rows of the file, which are usually the column labels
+snps$fileSkipColumns = 1 #skips first x columns of the file, which are usually the row labels
+snps$fileSliceSize = 2000 #specify how many rows of file to read at a time
+snps$LoadFile(snp_file) #loads file previously assigned to the snp_file variable into the program
+```
+
+Load the gene expression data
+```{r}
+gene = SlicedData$new() #new object
+gene$fileDelimiter = "\t" #tab delimited
+gene$fileOmitCharacters = "NA" #missing values are NA
+gene$fileSkipRows = 1 #skips column headers
+gene$fileSkipColumns = 1 #skips row headers
+gene$fileSliceSize = 2000; #read file in slices of 2,000 rows
+gene$LoadFile(expression_file) #use expression file
+```
+
+Load in the covariant data
+```{r}
+cvrt = SlicedData$new() #new object
+cvrt$fileDelimiter = "\t" #tab delimited
+cvrt$fileOmitCharacters = "NA" #missing values are NA
+cvrt$fileSkipRows = 1 #skips column headers
+cvrt$fileSkipColumns = 1 #skips row headers
+if(length(covariate_file)>0) {
+cvrt$LoadFile(covariate_file)
+} #loads in covariant file only if it has content
+```
+
+Run Matrix eQTL analysis
+```{r}
+m_eqtl = Matrix_eQTL_engine( #engine performs eQTL analysis
+snps = snps, #stored data from genotype file
+gene = gene, #stored data from genotype expression file
+cvrt = cvrt, #stored data from the covariate file
+output_file = output_file, #path to send data and results to
+pvOutputThreshold = pvOutputThreshold, #stored p-value threshold
+useModel = model, #stored statistic method
+errorCovariance = errorCovariance, #stored error covariance file or numeric()
+verbose = TRUE, #set to true to view status messages throughout execution
+pvalue.hist = TRUE, #set to true to obtain p-values to use in a histogram
+min.pv.by.genesnp = FALSE, #set to true to save only the minimum p-value for each gene-snp pair, false for all p-values to be saved
+noFDRsaveMemory = FALSE) #set to true to skip saving results to memory, false to store information to memory
+
+unlink(output_file) #deletes the output file after analysis is complete
+```
+
+View results
+```{r}
+cat('Analysis done in: ', m_eqtl$time.in.sec, ' seconds', '\n') #prints time taken to execute analysis
+cat('Detected eQTLs:', '\n') 
+show(m_eqtl$all$eqtls) #prints detected eQTLs
+```
+
+Plot a histogram of p-values
+```{r}
+plot(m_eqtl) #plots histogram
+```
+
