@@ -1,0 +1,108 @@
+---
+title: "Plotting"
+author: "Claudia Krueger"
+date: "11/8/2024"
+output: html_document
+---
+
+Plotting histograms and qqplots of p-values is necessary after running Matrix eQTL to check for inflation in the results.
+
+Inflation can come from the following and more:
+- covariates not included in analysis
+- population stratification
+- sequencing errors or plate effects
+- incorrect model use or model misspecification
+
+An artificial dataset to plot:
+```{r}
+library("MatrixEQTL")
+
+n <- 100 #number of samples
+variables <- 2000 #number of variables
+pop = 0.2 * rnorm(n) #signal for population stratification
+
+#snp and gene data matrices
+snps_matrix <- matrix(rnorm(n*variables), ncol = variables) + pop
+gene_matrix <- matrix(rnorm(n*variables), ncol = variables) + pop + snps_matrix*((1:variables)/variables)^9/2
+
+#snp, gene, and covariate objects
+snps = SlicedData$new( t( snps_matrix ) )
+gene = SlicedData$new( t( gene_matrix ) )
+cvrt = SlicedData$new( )
+rm(snps_matrix, gene_matrix)
+
+#slice data in blocks of 500 variables
+snps$ResliceCombined(500)
+gene$ResliceCombined(500)
+
+#create temporary output file
+file = tempfile()
+
+#use pvalue.hist = TRUE (or number of p-values to include) to record information needed to plot histograms
+hist_matrix = Matrix_eQTL_engine(
+  snps = snps,
+  gene = gene,
+  cvrt = cvrt,
+  output_file_name = file,
+  pvOutputThreshold = 1e-100,
+  useModel = modelLINEAR,
+  errorCovariance = numeric(),
+  verbose = TRUE,
+  pvalue.hist = TRUE)
+
+unlink(file)
+
+#use pvalue.hist = "qqplot" to record information needed to plot qqplots
+qq_matrix = Matrix_eQTL_engine(
+  snps = snps,
+  gene = gene,
+  cvrt = cvrt,
+  output_file_name = file,
+  pvOutputThreshold = 1e-100,
+  useModel = modelLINEAR,
+  errorCovariance = numeric(),
+  verbose = TRUE,
+  pvalue.hist = "qqplot")
+
+unlink(file)
+
+```
+
+# Histogram plot
+```{r}
+png(filename = "histogram.png", width = 500, height = 500)
+plot(hist_matrix)
+```
+![histogram](~/matrix_eqtl/histogram.png)
+
+Interpretation of histograms:
+
+The horizontal reference line represents the null hypothesis of uniform p-value distributuion and expected density. Deviations of this line should be evaluated to identify associations between SNPs and gene expression.
+
+*Uniformity*
+Under the null hypothesis of no true associations, the histogram will have uniform p-value distribution shown as a flat distribution. A histogram is not flat, as seen here with the spike near low p-values, suggests that there may be significan gene-SNP associations.
+
+*Small p-values*
+The high density near zero of p-values smaller than expected under the null hypothesis indicates true associations.
+
+*False discovery rate (FDR)*
+The larger the dataset, the greater incidence of false discovery, so correction of FDR is essential. An FDR threshold can be applied to the histogram to evaluate if any of the p-values that seem to indicate true association are false disoveries.
+
+# QQplot
+```{r}
+png(filename = "qqplot.png", width = 500, height = 500)
+plot(qq_matrix)
+```
+![qqplot](~/matrix_eqtl/qqplot.png)
+
+Interpretation of QQplots:
+
+The X axis represents p-values expected under the null hypothesis of no association between height and SNPs. The Y axis represents the observed p-values ranked from largest at (0,0) to smallest. 
+
+The grey line is the null hypothesis. The blue line is the observed p-values.
+
+Observed p-values follow the null hypothesis at higher p-values, which is expected as these are less significant in influencing the gene expression. The large deviation from the null hypothesis when observed p-values are smaller provides evidence that there are many SNPs that influence gene expression. The larger the deviation is, the stronger and greater the true associations are.
+
+*Genomic inflation*
+A plot that does not follow the null hypothesis at high p-values or has no regions with a linear slope indicates issues with population stratification or unknown covariants included in the analysis.
+
