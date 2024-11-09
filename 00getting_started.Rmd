@@ -132,8 +132,8 @@ unlink(output_file) #deletes the output file after analysis is complete
 
 View results
 ```{r}
-cat('Analysis done in: ', m_eqtl$time.in.sec, ' seconds', '\n'); #prints time taken to execute analysis
-cat('Detected eQTLs:', '\n'); 
+cat('Analysis done in: ', m_eqtl$time.in.sec, ' seconds', '\n') #prints time taken to execute analysis
+cat('Detected eQTLs:', '\n') 
 show(m_eqtl$all$eqtls) #prints detected eQTLs
 ```
 
