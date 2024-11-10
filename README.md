@@ -1,5 +1,5 @@
 # Matrix eQTL Tutorial
-### Matrix eQTL allows for analysis of associations between variants (SNPs) within the genome with gene expression levels, known as expression quanitiative trait loci (eQTLs)
+### Matrix eQTL allows for analysis of associations between variants (SNPs) within the genome with quantitative trait expression levels, known as expression quanitiative trait loci (eQTLs)
 - Uses matrix operations to process multiple SNP-gene pairs in parallel, known as sliced data processing
 - Is able to perform ultra-fast eQTL analysis without loss of precision
 - Can incorporate covariates, false discovery rate (FDR) correction, and separate cis vs trans eQTLs
