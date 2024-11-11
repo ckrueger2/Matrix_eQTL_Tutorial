@@ -79,13 +79,13 @@ Interpretation of histograms:
 The horizontal reference line represents the null hypothesis of uniform p-value distribution and expected density. Deviations of this line should be evaluated to identify associations between SNPs and gene expression.
 
 *Uniformity*
-Under the null hypothesis of no true associations, the histogram will have uniform p-value distribution shown as a flat distribution. A histogram is not flat, as seen here with the spike near low p-values, suggests that there may be significan gene-SNP associations.
+Under the null hypothesis of no true associations, the histogram will have uniform p-value distribution shown as a flat distribution. A histogram is not flat, as seen here with the spike near low p-values, suggests that there may be significant gene-SNP associations.
 
 *Small p-values*
 The high density near zero of p-values smaller than expected under the null hypothesis indicates true associations.
 
 *False discovery rate (FDR)*
-The larger the dataset, the greater incidence of false discovery, so correction of FDR is essential. An FDR threshold can be applied to the histogram to evaluate if any of the p-values that seem to indicate true association are false disoveries.
+The larger the dataset, the greater incidence of false discovery, so correction of FDR is essential. An FDR threshold can be applied to the histogram to evaluate if any of the p-values that seem to indicate true association are false discoveries.
 
 # QQplot
 ```{r}
