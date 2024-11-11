@@ -95,7 +95,7 @@ plot(qq_matrix)
 
 Interpretation of QQplots:
 
-The X axis represents p-values expected under the null hypothesis of no association between height and SNPs. The Y axis represents the observed p-values ranked from largest at (0,0) to smallest. 
+The X axis represents p-values expected under the null hypothesis of no association between expression and SNPs. The Y axis represents the observed p-values ranked from largest at (0,0) to smallest. 
 
 The grey line is the null hypothesis. The blue line is the observed p-values.
 
