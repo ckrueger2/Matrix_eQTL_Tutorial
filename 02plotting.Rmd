@@ -76,7 +76,7 @@ plot(hist_matrix)
 
 Interpretation of histograms:
 
-The horizontal reference line represents the null hypothesis of uniform p-value distributuion and expected density. Deviations of this line should be evaluated to identify associations between SNPs and gene expression.
+The horizontal reference line represents the null hypothesis of uniform p-value distribution and expected density. Deviations of this line should be evaluated to identify associations between SNPs and gene expression.
 
 *Uniformity*
 Under the null hypothesis of no true associations, the histogram will have uniform p-value distribution shown as a flat distribution. A histogram is not flat, as seen here with the spike near low p-values, suggests that there may be significan gene-SNP associations.
