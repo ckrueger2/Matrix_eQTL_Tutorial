@@ -102,5 +102,5 @@ The grey line is the null hypothesis. The blue line is the observed p-values.
 Observed p-values follow the null hypothesis at higher p-values, which is expected as these are less significant in influencing the gene expression. The large deviation from the null hypothesis when observed p-values are smaller provides evidence that there are many SNPs that influence gene expression. The larger the deviation is, the stronger and greater the true associations are.
 
 *Genomic inflation*
-A plot that does not follow the null hypothesis at high p-values or has no regions with a linear slope indicates issues with population stratification or unknown covariants included in the analysis.
+A plot that does not follow the null hypothesis at high p-values or has no regions with a linear slope indicates issues with population stratification or unknown covariates included in the analysis.
 
