@@ -36,7 +36,7 @@ Set the parameters, name of genotype file, name of gene expression data file, an
 
 - modelLINEAR_CROSS: Tests whether the effect of the genotype on gene expression relates to the phenotype or the group defined by the last covariate like age, sex, or environment via t-statistic
 
-  ***(expression = baseline expression + effect of covariates + effect of covariates + interaction between genetic effect and last covariate)***
+  ***(expression = baseline expression + effect of covariates + sum of genetic effects + interaction between genetic effect and last covariate)***
 
   *Last covariate of case and control groups allows for analysis of genetic effect expression variation between the two groups*
 ```{r}
